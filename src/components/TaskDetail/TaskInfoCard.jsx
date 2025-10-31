@@ -10,11 +10,12 @@ import {
   Box,
   Grid,
   IconButton,
-  TextField
+  TextField,
 } from "@mui/material";
-import { CloudUpload, CameraAlt, Close, Edit, Save, Cancel, Check } from "@mui/icons-material";
+import { CloudUpload, CameraAlt, Close, Edit, Check } from "@mui/icons-material";
 import TaskCamera from "./TaskCamera";
 import TaskCameraBad from "./TaskCameraBad";
+import { PieChart, Pie, Cell, ResponsiveContainer, Label } from "recharts";
 
 export default function TaskInfoCard({
   task,
@@ -35,7 +36,6 @@ export default function TaskInfoCard({
     setCameraGoodOn((prev) => !prev);
     if (cameraBadOn) setCameraBadOn(false);
   };
-
   const toggleBadCamera = () => {
     setCameraBadOn((prev) => !prev);
     if (cameraGoodOn) setCameraGoodOn(false);
@@ -55,14 +55,19 @@ export default function TaskInfoCard({
     setIsEditingGoal(false);
   };
 
+  // 🔹 Prepare data for KPI Donut
+  const pieData = [
+    { name: "Good", value: task.good_count, color: "#1B5E20" },
+    { name: "Bad", value: task.bad_count, color: "#B71C1C" },
+  ];
+
+  const totalPercent = ((task.count / task.goal) * 100).toFixed(1);
+  const goodPercent = task.count > 0 ? ((task.good_count / task.count) * 100).toFixed(1) : 0;
+  const badPercent = task.count > 0 ? ((task.bad_count / task.count) * 100).toFixed(1) : 0;
+
+
   return (
-    <Card
-      sx={{
-        height: "100%",
-        borderRadius: 4,
-        p: 2,
-      }}
-    >
+    <Card sx={{ height: "100%", borderRadius: 4, p: 2 }}>
       <CardContent sx={{ flexGrow: 1 }}>
         {/* Header */}
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -76,36 +81,54 @@ export default function TaskInfoCard({
           />
         </Stack>
 
-        {/* Summary Boxes */}
-        <Grid container spacing={2} mb={3}>
-          <Grid item xs={12} sm={4}>
-            <InfoBox
-              title="Total"
-              value={`${task.count} / ${task.goal}`}
-              percent={((task.count * 100) / task.goal).toFixed(1)}
-              color="#0D47A1"
-              bg="linear-gradient(145deg, #E3F2FD, #BBDEFB)"
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <InfoBox
-              title="Good"
-              value={task.good_count}
-              percent={((task.good_count * 100) / task.goal).toFixed(1)}
-              color="#1B5E20"
-              bg="linear-gradient(145deg, #E8F5E9, #C8E6C9)"
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <InfoBox
-              title="Bad"
-              value={task.bad_count}
-              percent={((task.bad_count * 100) / task.goal).toFixed(1)}
-              color="#B71C1C"
-              bg="linear-gradient(145deg, #FFEBEE, #FFCDD2)"
-            />
-          </Grid>
-        </Grid>
+        {/* KPI Donut Chart */}
+        <Box sx={{ width: "100%", height: 200, mb: 3, position: "relative" }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={pieData}
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+
+          {/* Total % */}
+          <Typography
+            variant="h5"
+            sx={{
+              textAlign: "center",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              fontWeight: 700,
+              color: "#000",
+            }}
+          >
+            {totalPercent}%
+          </Typography>
+
+          {/* Labels รอบๆ chart */}
+          <Box sx={{ position: "absolute", top: 10, left: 10 }}>
+            <Typography variant="body2" color="#1B5E20">
+              Good: {task.good_count} ({goodPercent}%)
+            </Typography>
+            <Typography variant="body2" color="#B71C1C">
+              Bad: {task.bad_count} ({badPercent}%)
+            </Typography>
+            <Typography variant="body2" color="#555">
+              Remaining: {Math.max(task.goal - task.good_count - task.bad_count, 0)}
+            </Typography>
+          </Box>
+        </Box>
+
 
         <Divider sx={{ mb: 2 }} />
 
@@ -114,7 +137,6 @@ export default function TaskInfoCard({
           <Typography variant="body1">
             <strong>Plan:</strong>
           </Typography>
-
           {isEditingGoal ? (
             <>
               <TextField
@@ -123,22 +145,12 @@ export default function TaskInfoCard({
                 value={goalValue}
                 onChange={(e) => setGoalValue(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSaveGoalClick();
-                  }
+                  if (e.key === "Enter") handleSaveGoalClick();
                 }}
                 sx={{ width: 100 }}
-                autoFocus // ✅ โฟกัสทันทีเมื่อเปิดโหมดแก้ไข
+                autoFocus
               />
-              <IconButton
-                size="small"
-                color="default"
-                onClick={handleSaveGoalClick}
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  "&:hover": { backgroundColor: "#e0e0e0" },
-                }}
-              >
+              <IconButton size="small" color="default" onClick={handleSaveGoalClick}>
                 <Check fontSize="small" />
               </IconButton>
             </>
@@ -151,7 +163,6 @@ export default function TaskInfoCard({
             </>
           )}
         </Box>
-
 
         <Typography variant="body1" mt={1}>
           <strong>State:</strong> {task.state}
@@ -182,16 +193,6 @@ export default function TaskInfoCard({
           cameraOn={cameraOnBad}
         />
 
-        {/* Note */}
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mt: 2, fontStyle: "italic" }}
-        >
-          * ปุ่ม <strong>Upload</strong> และ <strong>Camera</strong> ใช้สำหรับอัปโหลด
-          หรือถ่ายภาพเพื่อเก็บเป็นข้อมูลประกอบการตรวจสอบ (QA)
-        </Typography>
-
         {cameraOnGood && (
           <Box mt={3}>
             <TaskCamera handleCameraCapture={handleCameraCaptureGood} />
@@ -207,50 +208,8 @@ export default function TaskInfoCard({
   );
 }
 
-/* 🔹 กล่องแสดงข้อมูลรวม */
-function InfoBox({ title, value, percent, color, bg }) {
-  return (
-    <Card
-      elevation={3}
-      sx={{
-        p: 2,
-        borderRadius: 3,
-        background: bg,
-        textAlign: "center",
-        height: 120,
-        width: 100,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        transition: "transform 0.25s ease",
-        "&:hover": {
-          transform: "translateY(-4px)",
-        },
-      }}
-    >
-      <Typography variant="subtitle2" sx={{ color, fontWeight: 600 }}>
-        {title}
-      </Typography>
-      <Typography variant="h5" sx={{ fontWeight: 800, color, mt: 0.5 }}>
-        {value}
-      </Typography>
-      <Typography variant="body2" sx={{ color, fontWeight: 700 }}>
-        {percent}%
-      </Typography>
-    </Card>
-  );
-}
-
 /* 🔹 ส่วนของการอัปโหลดภาพ */
-function UploadSection({
-  title,
-  subtitle,
-  color,
-  iconColor,
-  handleUpload,
-  handleCameraToggle,
-  cameraOn,
-}) {
+function UploadSection({ title, subtitle, color, iconColor, handleUpload, handleCameraToggle, cameraOn }) {
   return (
     <Box
       sx={{
@@ -259,19 +218,13 @@ function UploadSection({
         borderRadius: 3,
         backgroundColor: `${iconColor}10`,
         transition: "0.3s",
-        "&:hover": {
-          backgroundColor: `${iconColor}15`,
-        },
+        "&:hover": { backgroundColor: `${iconColor}15` },
       }}
     >
       <Typography variant="subtitle1" sx={{ fontWeight: 700, color: iconColor }}>
         {title}
       </Typography>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mt: 0.5, mb: 1.5, fontStyle: "italic" }}
-      >
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5, fontStyle: "italic" }}>
         {subtitle}
       </Typography>
 
@@ -281,13 +234,7 @@ function UploadSection({
           component="label"
           startIcon={<CloudUpload />}
           color={color}
-          sx={{
-            borderRadius: 3,
-            fontWeight: 600,
-            textTransform: "none",
-            px: 3,
-            py: 1,
-          }}
+          sx={{ borderRadius: 3, fontWeight: 600, textTransform: "none", px: 3, py: 1 }}
         >
           Upload
           <input type="file" hidden multiple onChange={handleUpload} />
@@ -298,13 +245,7 @@ function UploadSection({
           color={cameraOn ? "error" : color}
           onClick={handleCameraToggle}
           startIcon={cameraOn ? <Close /> : <CameraAlt />}
-          sx={{
-            borderRadius: 3,
-            fontWeight: 600,
-            textTransform: "none",
-            px: 3,
-            py: 1,
-          }}
+          sx={{ borderRadius: 3, fontWeight: 600, textTransform: "none", px: 3, py: 1 }}
         >
           {cameraOn ? "Close Camera" : "Camera"}
         </Button>
