@@ -164,7 +164,7 @@ function ImageCard({
   baseIp,
 }) {
   return (
-    <Card sx={{ height: "100%", borderRadius: 3, boxShadow: 2 }}>
+    <Card sx={{ height: "100%",width:"100%", borderRadius: 3, boxShadow: 2 }}>
       <CardContent>
         <Typography variant="h6" gutterBottom color="primary">
           {title}
@@ -173,7 +173,7 @@ function ImageCard({
 
         {images.length > 0 ? (
           <>
-            <Box display="grid" gridTemplateColumns="repeat(4, 120px)" gap={2}>
+            <Box display="grid" gridTemplateColumns="repeat(4, 185px)" gap={2}>
               {images.map((img) => (
                 <Box
                   key={img.id}

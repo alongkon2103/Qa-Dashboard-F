@@ -6,8 +6,9 @@ import { fetchTaskById, updateTaskName, uploadTaskImages, uploadTaskImage, uploa
 import TaskHeader from "./TaskHeader";
 import TaskInfoCard from "./TaskInfoCard";
 import TaskImageGallery from "./TaskImageGallery";
-import { AnchorSharp } from "@mui/icons-material";
+import { AnchorSharp, Height } from "@mui/icons-material";
 import TaskLog from "./TaskLog";
+import VideoViewer from './VideoViewer';
 
 export default function TaskDetail() {
   const fixedTaskId = "6903904725d93baa2219118b";
@@ -147,7 +148,7 @@ export default function TaskDetail() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Task Header */}
         <TaskHeader
           taskName={taskName}
@@ -158,23 +159,32 @@ export default function TaskDetail() {
         />
 
         {/* Task Info Card */}
-        <Box my={3}>
-          <TaskInfoCard
-            task={task}
-            cameraOnGood={cameraOnGood}
-            cameraOnBad={cameraOnBad}
-            handleUploadGood={handleUploadGood}
-            handleUploadBad={handleUploadBad}
-            handleCameraToggleGood={() => setCameraOnGood((prev) => !prev)}
-            handleCameraToggleBad={() => setCameraOnBad((prev) => !prev)}
-            handleCameraCaptureGood={handleCameraCaptureGood}
-            handleCameraCaptureBad={handleCameraCaptureBad}
-            handleSaveGoal={handleSaveGoal}
-          />
-        </Box>
+        <Grid container spacing={3}>
+
+
+          <Box my={3} sx={{width:"55%"}}>
+            <TaskInfoCard
+              task={task}
+              cameraOnGood={cameraOnGood}
+              cameraOnBad={cameraOnBad}
+              handleUploadGood={handleUploadGood}
+              handleUploadBad={handleUploadBad}
+              handleCameraToggleGood={() => setCameraOnGood((prev) => !prev)}
+              handleCameraToggleBad={() => setCameraOnBad((prev) => !prev)}
+              handleCameraCaptureGood={handleCameraCaptureGood}
+              handleCameraCaptureBad={handleCameraCaptureBad}
+              handleSaveGoal={handleSaveGoal}
+            />
+          </Box>
+          <Box my={3} sx={{width:"40%"}}>
+            <VideoViewer />
+
+          </Box>
+        </Grid>
+
 
         {/* Image Gallery */}
-        <Grid container spacing={3}>
+        <Grid container spacing={3} mt={5}>
           <Grid item xs={12}>
             <TaskImageGallery images={task.images} taskId={task.id} setTask={setTask} />
           </Grid>
